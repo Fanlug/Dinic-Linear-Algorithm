@@ -1,14 +1,16 @@
-def bfs(capacity_matrix, residual_graph, s, t, level):
-    for i in range(len(capacity_matrix)):
+def bfs(graph, residual_graph, s, t, level, nodes_by_level):
+    for i in range(len(graph)):
         level[i] = -1
     level[s] = 0
     q = [s]
     while q:
         u = q.pop(0)
-        for v in range(len(capacity_matrix[u])):
+        for v in range(len(graph)):
             if level[v] < 0 and residual_graph[u][v] > 0:
                 level[v] = level[u] + 1
                 q.append(v)
+    for i in range(len(graph)):
+        nodes_by_level[level[i]].append(i)
     return False if level[t] < 0 else True
 
 
@@ -24,32 +26,30 @@ def dfs(residual_graph, source, sink, level, nodes_by_level):
                 stack.append((v, path + [v]))
 
 
-def dinic(adj_matrix, source, sink):
-    n = len(adj_matrix)
-    residual_graph = [[adj_matrix[i][j] for j in range(n)] for i in range(n)]
-
-    # Initialize flow to 0
+def dinic(graph, source, sink):
+    n = len(graph)
+    residual_graph = [[graph[i][j] for j in range(n)] for i in range(n)]
     flow = 0
     level = [-1] * n
-
-    while bfs(adj_matrix, residual_graph, source, sink, level):
-        nodes_by_level = [[]] * n
-        for i in range(n):
-            nodes_by_level[level[i]].append(i)
+    nodes_by_level = [[] for _ in range(n)]
+    while bfs(graph, residual_graph, source, sink, level, nodes_by_level):
         while True:
             path = dfs(residual_graph, source, sink, level, nodes_by_level)
 
             if path is None:
                 break
             # Find bottleneck capacity along path
-            bottleneck = min(residual_graph[u][v] for u, v in zip(path[:-1], path[1:]))
+            bottleneck = float('inf')
+            for i in range(len(path) - 1):
+                u, v = path[i], path[i + 1]
+                bottleneck = min(bottleneck, residual_graph[u][v])
             # Update flow and residual capacities along path
-            for u, v in zip(path[:-1], path[1:]):
+            for i in range(len(path) - 1):
+                u, v = path[i], path[i + 1]
                 residual_graph[u][v] -= bottleneck
                 residual_graph[v][u] += bottleneck
             # Add bottleneck capacity to flow
             flow += bottleneck
-
     return flow
 
 
