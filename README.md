@@ -1,2 +1,2 @@
-# Dinic-Linear-Algorithm
-Dinic Linear Algorithm
+# Dinic-Non-Recursive-Algorithm
+Dinic Non-Recursive Algorithm
